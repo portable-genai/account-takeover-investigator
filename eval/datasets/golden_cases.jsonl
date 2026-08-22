@@ -1,0 +1,8 @@
+# Golden account-takeover cases. expected_band and expected_review are the INDEPENDENT oracle:
+# hand-labelled from the fixtures' intent (adapters/local/fixtures.py), never read from pipeline
+# output. Every subject and identifier is obviously fictional.
+{"subject_id": "acct-quiet", "session_id": "sess-1", "expected_band": "low", "expected_review": false, "planted": null}
+{"subject_id": "acct-takeover", "session_id": "sess-1", "expected_band": "critical", "expected_review": true, "planted": null}
+{"subject_id": "acct-stuffing", "session_id": "sess-1", "expected_band": "medium", "expected_review": true, "planted": null}
+{"subject_id": "acct-biometric", "session_id": "sess-1", "expected_band": "medium", "expected_review": true, "planted": null}
+{"subject_id": "acct-S1234567D", "session_id": "sess-1", "expected_band": "low", "expected_review": false, "planted": "S1234567D"}

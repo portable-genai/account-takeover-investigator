@@ -1,0 +1,8 @@
+{
+  "locals": {
+    "render_region": "asia-southeast1",
+    "render_package_name": "account_takeover_investigator",
+    "render_env_prefix": "ATOINVEST",
+    "render_catalog_id": "G4"
+  }
+}
