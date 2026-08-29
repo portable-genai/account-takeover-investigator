@@ -217,7 +217,7 @@ per-rule evidence is in [`COMPLIANCE.md`](../COMPLIANCE.md).
 - **Hrz7** human-review and maker-checker console: fully wired (rule R8). Every escalation is
   routed through `ReviewRouterPort` over the shared `review-kit` in the same call that
   produced it, redacted before the wire, with CRITICAL demanding two approvals. You supply
-  `HRZ_HUMAN_REVIEW_URL` and the outbound credentials; you do not re-implement the console.
+  `HUMAN_REVIEW_URL` and the outbound credentials; you do not re-implement the console.
 - **Rsk3** architecture and requirements validator: an intake action, not a code control
   (rule R6). Record your validation reference in `COMPLIANCE.md` when the project passes.
 - **Mkt6** marketing compliance gate: not applicable. This service produces no customer-facing
@@ -246,7 +246,7 @@ None of them is called from here.
 - [ ] Set `JURISDICTIONS` in `domain/pii.py` to the markets you serve.
 - [ ] Replaced every fixture and the local session and baseline data with your own synthetic set.
 - [ ] Relabelled `eval/datasets/golden_cases.jsonl` and reviewed the four `THRESHOLDS`.
-- [ ] Wired `HRZ_HUMAN_REVIEW_URL` plus the outbound Hrz7 credentials, and registered the
+- [ ] Wired `HUMAN_REVIEW_URL` plus the outbound Hrz7 credentials, and registered the
       agent card with Hrz3 and the eval bundle with Hrz4.
 - [ ] Replaced the four construction-only managed adapters listed in `managed_readiness.py`
       before any managed deploy.

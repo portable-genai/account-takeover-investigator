@@ -88,7 +88,7 @@ is not the same as an action taken.
 
 The one outbound call on the shipped path is the review submission to Hrz7, built on the
 shared `review-kit` client, which refuses a plaintext non-loopback URL and a missing
-bearer at construction. Its credentials (`HRZ7_S2S_TOKEN`, `HRZ7_S2S_SIGNING_KEY`) are
+bearer at construction. Its credentials (`HUMAN_REVIEW_S2S_TOKEN`, `HUMAN_REVIEW_S2S_SIGNING_KEY`) are
 deliberately distinct variables from this service's own inbound
 `ATOINVEST_S2S_TOKEN`: mixing inbound and outbound credentials into one
 variable is how a compromise of one direction becomes a compromise of both.
