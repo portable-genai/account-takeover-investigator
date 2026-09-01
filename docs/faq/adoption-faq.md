@@ -100,14 +100,14 @@ It is guarded from two directions. A demo step exists in exactly two places, `de
 the offline gate, so a narrated claim nobody verifies cannot exist. `make demo-selftest` then
 runs the whole eight-step arc headless against the REAL demo server over loopback HTTP and
 asserts that the service actually reached the state each narration claimed, in its own
-required CI check (`.github/workflows/demo-gate.yaml`) rather than inside `make gate`, because
+required CI check (the hosted Cloud Build check) rather than inside `make gate`, because
 the gate must stay fast and offline. When you add a step, put the numbers the check reads in
 the step's `facts` dict rather than only in rendered prose: a check that parses prose breaks on
 a wording change.
 
 ### Does CI run for my fork out of the box?
 
-Yes. `.github/workflows/ci.yaml` is a thin caller of the shared reusable hard-gate workflow,
+Yes. the hosted Cloud Build check is a thin caller of the shared reusable hard-gate workflow,
 pinned to a TAG rather than a branch, and it references no `secrets.` at all. The gate is
 offline and credential-free by design: no cloud SDK, no project, no network. The one job that
 needs the runtime lockfile is the IAP crypto matrix, and even that stays offline because the
