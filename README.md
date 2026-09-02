@@ -111,3 +111,4 @@ file. `docs/practices-audit.md` records the per-check verdict. Region pinned to
 ## License
 
 Apache-2.0. Synthetic, obviously fictional data only.
+
