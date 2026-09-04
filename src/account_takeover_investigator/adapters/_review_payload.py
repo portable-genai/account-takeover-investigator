@@ -1,11 +1,12 @@
 """Shared conversion from an escalated result to an ``review-kit`` Review payload.
 
-Lives in the adapter layer, not the pure domain, because it depends on the kit. The subject,
-summary and every citation snippet are redacted BEFORE they leave the process (the same
+Lives in the adapter layer, not the pure domain, because it depends on the kit. The subject, summary
+and every citation snippet are redacted BEFORE they leave the process (the same
 redact-before-anything rule the audit write obeys), using the shared ``pii-kit``, so no raw
-identifier reaches Hrz7 over the wire; Hrz7 redacts again before its own audit write (defence in
-depth). ``maker`` and ``tenant`` are asserted here and trusted by Hrz7 because the caller is an
-authenticated S2S service; per-hop on-behalf-of token exchange is the deferred next layer.
+identifier reaches human-review-console over the wire; human-review-console redacts again before its
+own audit write (defence in depth). ``maker`` and ``tenant`` are asserted here and trusted by
+human-review-console because the caller is an authenticated S2S service; per-hop on-behalf-of token
+exchange is the deferred next layer.
 """
 
 from __future__ import annotations
@@ -19,6 +20,10 @@ from review_kit import Review
 
 from ..domain.kernel import Severity
 from ..domain.models import Investigation
+
+#: The repository name prefixes every source_key: it is the dedup key the
+#: human-review-console stores, so it names the producer.
+_REPOSITORY = "account-takeover-investigator"
 
 #: Cap the citations carried on the wire: enough for a reviewer to trace the decision without
 #: copying the whole evidence set into the console.
@@ -69,7 +74,9 @@ def _kit_citations(result: Investigation) -> tuple[KitCitation, ...]:
 
 
 def result_to_review(result: Investigation, *, maker: str, tenant: str = "") -> Review:
-    """Build the review a producer submits to Hrz7 when an investigation escalates."""
+    """Build the review a producer submits to human-review-console when an
+    investigation escalates.
+    """
     return Review(
         action="account_takeover_investigator:investigate",
         subject=_redact(result.subject),
@@ -83,6 +90,6 @@ def result_to_review(result: Investigation, *, maker: str, tenant: str = "") -> 
         # Producer-owned, tenant-scoped key so a retried delivery is idempotent at the console.
         # Both halves are masked: masking is deterministic, so the key stays stable across a
         # retry, and an idempotency key is still a string that lands in another system's store.
-        source_key=f"G4:{_redact(result.subject)}:{_redact(result.session_id)}",
+        source_key=f"{_REPOSITORY}:{_redact(result.subject)}:{_redact(result.session_id)}",
         citations=_kit_citations(result),
     )

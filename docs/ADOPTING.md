@@ -37,7 +37,7 @@ imports, so what you inherit really is portable.
 
 If your product is another *deterministic-decision plus grounded-narration* investigator, the
 hexagon, the three profiles, the redact-before-anything rule, the citation discipline, the
-eval gate and the Hrz7 review routing transfer directly. You replace the detectors and the
+eval gate and the `human-review-console` review routing transfer directly. You replace the detectors and the
 containment ladder, and you retune the policy numbers.
 
 ## 2. Core-vs-adopter-owned files (so upstream merges stay mechanical)
@@ -90,7 +90,7 @@ Three things about the flags, because they are deliberately fewer than you may e
   too, and a second flag could only drift out of step with it.
 - **There is no `--dist` flag.** `--resource` is one literal doing four jobs: the distribution
   name in `pyproject.toml`, the GitHub id in `[project.urls]`, the A2A agent-card name in
-  `agent/agent_card.py`, and the Hrz4 eval bundle id (`_BUNDLE` in `eval/run_eval.py`). They
+  `agent/agent_card.py`, and the `model-quality-gate` eval bundle id (`_BUNDLE` in `eval/run_eval.py`). They
   are the same string on purpose, so a fork's promotion record and its discovery card cannot
   disagree about which system they describe.
 - **`--name-prefix` is optional and narrowly scoped.** It rewrites the Terraform `name_prefix`
@@ -197,30 +197,30 @@ are owned by sibling platform services; integrate rather than rebuild them. The 
 the honest state of each integration, is in [`faq/features-faq.md`](faq/features-faq.md); the
 per-rule evidence is in [`COMPLIANCE.md`](../COMPLIANCE.md).
 
-- **Hrz1** guardrail gateway: **not integrated today.** There is no `GuardrailPort` in
+- `agent-guardrail-gateway`: **not integrated today.** There is no `GuardrailPort` in
   `ports/`, because no untrusted free text reaches a model on the shipped path (the narrator
   is handed engine facts and an already-masked subject). Rule R1 says bind one the moment
   that changes. In-repo redaction (`domain/pii.py`) is not a substitute for the gateway.
-- **Hrz2** governed knowledge base: **not used.** There is no retrieval port, so rule R3 and
+- `enterprise-knowledge-base` governed knowledge base: **not used.** There is no retrieval port, so rule R3 and
   principle P-05 do not apply yet. Add one and both become mandatory together.
-- **Hrz3** agent registry: the A2A card is published at `/.well-known/agent-card.json` and
+- `agent-registry`: the A2A card is published at `/.well-known/agent-card.json` and
   built from the same tool table the runtime binds (`agent/agent_card.py`). Registering it
-  and taking the agent's identity and entitlements from Hrz3 is the adopter's step (rule R4).
-- **Hrz4** AI-quality and model-risk gate: `eval/run_eval.py --mode gate` is the client half
+  and taking the agent's identity and entitlements from `agent-registry` is the adopter's step (rule R4).
+- `model-quality-gate`: `eval/run_eval.py --mode gate` is the client half
   and refuses to run off the managed profile; the bundle id is
-  `account-takeover-investigator`. Registering that bundle and its thresholds with Hrz4 is
+  `account-takeover-investigator`. Registering that bundle and its thresholds with `model-quality-gate` is
   the adopter's step (rule R5, principle P-08). The offline `--mode smoke` run mirrors it.
-- **Hrz5** observability and immutable WORM audit: the tracer adapter exports OTLP to the Hrz5
+- `agent-observability` and immutable WORM audit: the tracer adapter exports OTLP to the `agent-observability`
   collector when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and to Cloud Trace when it is not. The
   audit half is local and tamper-evident today (rule R2 is Partial); pointing it at the shared
   sink is yours.
-- **Hrz7** human-review and maker-checker console: fully wired (rule R8). Every escalation is
+- `human-review-console` human-review and maker-checker console: fully wired (rule R8). Every escalation is
   routed through `ReviewRouterPort` over the shared `review-kit` in the same call that
   produced it, redacted before the wire, with CRITICAL demanding two approvals. You supply
   `HUMAN_REVIEW_URL` and the outbound credentials; you do not re-implement the console.
-- **Rsk3** architecture and requirements validator: an intake action, not a code control
+- `architecture-validator` architecture and requirements validator: an intake action, not a code control
   (rule R6). Record your validation reference in `COMPLIANCE.md` when the project passes.
-- **Mkt6** marketing compliance gate: not applicable. This service produces no customer-facing
+- `marketing-compliance-gate` marketing compliance gate: not applicable. This service produces no customer-facing
   marketing output (principle P-13, rule R7).
 
 Where this repo's responsibility ends: it investigates ONE session and recommends containment.
@@ -246,8 +246,8 @@ None of them is called from here.
 - [ ] Set `JURISDICTIONS` in `domain/pii.py` to the markets you serve.
 - [ ] Replaced every fixture and the local session and baseline data with your own synthetic set.
 - [ ] Relabelled `eval/datasets/golden_cases.jsonl` and reviewed the four `THRESHOLDS`.
-- [ ] Wired `HUMAN_REVIEW_URL` plus the outbound Hrz7 credentials, and registered the
-      agent card with Hrz3 and the eval bundle with Hrz4.
+- [ ] Wired `HUMAN_REVIEW_URL` plus the outbound `human-review-console` credentials, and registered the
+      agent card with `agent-registry` and the eval bundle with `model-quality-gate`.
 - [ ] Replaced the four construction-only managed adapters listed in `managed_readiness.py`
       before any managed deploy.
 - [ ] Reviewed the deploy posture (Dockerfile, Terraform, `retention_days`, bind address).

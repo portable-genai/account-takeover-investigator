@@ -8,8 +8,8 @@ containment set is a deterministic function of the band. The engine owns the sco
 the recommendation; **the LLM owns nothing here and is not imported by this module.**
 
 Every number is arithmetic over :class:`~account_takeover_investigator.domain.policy.FusionPolicy`.
-Given the same snapshot, baseline and policy the whole assessment is byte-identical, so an
-auditor can recompute it. ``signal_key`` fingerprints each anomaly (cribbed from the Doc1
+Given the same snapshot, baseline and policy the whole assessment is byte-identical, so an auditor
+can recompute it. ``signal_key`` fingerprints each anomaly (cribbed from the cdd-sow-research
 perpetual-KYC engine) so re-runs diff exactly rather than fuzzily.
 
 Pure standard library; no ports, no I/O, no clock of its own (``as_of`` rides on the snapshot).

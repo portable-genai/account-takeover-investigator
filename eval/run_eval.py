@@ -4,10 +4,10 @@
 Two named layers via ``--mode`` (the scaffold is ``agent_eval_kit.eval_main``):
 
 * **smoke** (default) - the offline pre-merge check CI runs on every change: it drives the real
-  ``InvestigationService`` against a golden set with SDK-free local adapters and scores four
-  metrics against the DATASET'S OWN expected outcome, never the pipeline's own verdict.
-* **gate** - the promotion verdict from the shared Hrz4 authority (requires the ``gcp`` profile),
-  via ``agent_eval_kit.PromotionGateClient``.
+  ``InvestigationService`` against a golden set with SDK-free local adapters and scores four metrics
+  against the DATASET'S OWN expected outcome, never the pipeline's own verdict. * **gate** - the
+  promotion verdict from the shared model-quality-gate authority (requires the ``gcp`` profile), via
+  ``agent_eval_kit.PromotionGateClient``.
 
 Every metric is proven able to go red in ``tests/unit/test_eval_metrics_can_go_red.py``. Exit is
 ``0`` iff every metric meets its threshold (and, in gate mode, the authority agrees).
@@ -40,7 +40,8 @@ THRESHOLDS: dict[str, float] = {
     "groundedness": 0.99,
     "pii_safety": 0.99,
 }
-#: The registered Hrz4 metric bundle for this vertical (Hrz4 owns the metrics + thresholds).
+#: The registered model-quality-gate metric bundle for this vertical (model-quality-gate owns the
+#: metrics + thresholds).
 _BUNDLE = "account-takeover-investigator"
 
 
@@ -165,6 +166,6 @@ if __name__ == "__main__":
             smoke=run_smoke,
             gate=run_gate,
             default_dataset=DEFAULT_DATASET,
-            description="Offline / Hrz4 evaluation gate for G4.",
+            description="Offline / model-quality-gate for G4.",
         )
     )

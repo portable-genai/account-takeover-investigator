@@ -51,7 +51,7 @@ over audio.
   scores the same property as `groundedness` at a 0.99 threshold.
 - **Nothing the model touches auto-executes (rule R8).** A consequential band sets
   `requires_human_review` AND the surface routes the result through `ReviewRouterPort` to the
-  Hrz7 console in the same call, on the API, the CLI and the agent tool alike, with the payload
+  `human-review-console` in the same call, on the API, the CLI and the agent tool alike, with the payload
   redacted before the wire and CRITICAL demanding two approvals
   (`adapters/_review_payload.py`). Containment is recommended, never enacted:
   `InvestigationService` does not depend on `IamActionsPort` at all.
@@ -80,7 +80,7 @@ principle side.
 - **Model id, version and prompt, for the `gcp` adapter** (P-07). Pin the exact model and
   record it in this card, wire the prompt that instructs the model to restate the brief and
   nothing else, and map the response. Note the one place a model name is already written down
-  is the Hrz4 promotion client in `eval/run_eval.py` (`model="gemini-3.5-flash"`); that string
+  is the `model-quality-gate` promotion client in `eval/run_eval.py` (`model="gemini-3.5-flash"`); that string
   is what the gate is asked about, not what any adapter calls, and the two must be reconciled
   when the adapter is implemented.
 - **A spy-adapter test on the narrator boundary** (P-04). Assert directly that a
@@ -91,13 +91,13 @@ principle side.
   rate limit, timeouts and a circuit breaker on the narration call, and a switch that forces
   deterministic-only operation with the model disabled. Because narration already falls back to
   `draft_narrative`, the kill switch is cheap: it is a binding change, not a rewrite. Report
-  spend through Hrz5.
-- **A managed-profile eval run through the Hrz4 gate** (P-08, R5). The offline eval scores the
+  spend through `agent-observability`.
+- **A managed-profile eval run through the `model-quality-gate`** (P-08, R5). The offline eval scores the
   deterministic local narrator, so `groundedness` currently measures a path that cannot
   fabricate. Add a managed-profile run that scores real narration groundedness against the same
   golden cases, and register the bundle `account-takeover-investigator` and its thresholds
-  with Hrz4 so `--mode gate` has an authority to ask.
-- **Prompt-injection screening through Hrz1** (R1). Not required by the shipped path, because
+  with `model-quality-gate` so `--mode gate` has an authority to ask.
+- **Prompt-injection screening through `agent-guardrail-gateway`** (R1). Not required by the shipped path, because
   the brief contains only engine-produced labels and numbers. It becomes required the moment
   any free-form text (an analyst note, a device-intelligence vendor's description, a customer
   message) is added to the brief: bind a `GuardrailPort`, screen input and output, and fail

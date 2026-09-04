@@ -152,7 +152,7 @@ def test_no_planted_identifier_reaches_the_model_the_worm_record_or_the_console(
     review = result_to_review(result, maker=sample_cases.ACTOR, tenant=sample_cases.TENANT)
     outbound = json.dumps(asdict(review), default=str)
     for token in planted:
-        assert token not in outbound, f"{token} left for Hrz7 in {outbound!r}"
+        assert token not in outbound, f"{token} left for human-review-console in {outbound!r}"
 
 
 def test_the_investigation_path_never_enacts_a_containment() -> None:

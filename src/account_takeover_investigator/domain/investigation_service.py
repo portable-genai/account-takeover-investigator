@@ -3,10 +3,10 @@
 The consequential outputs (the fused score, the band, the containment set) come from the pure
 :class:`~account_takeover_investigator.domain.fusion_engine.FusionEngine`; the model only narrates,
 and its narration is checked grounded and discarded on failure. PII is redacted BEFORE the narrator
-sees it and BEFORE anything is written to the audit sink (R1/P-04), every result carries a
-citation, and any consequential containment escalates: the service marks it
-``requires_human_review`` and the surfaces route it to Hrz7 (rule R8). This service NEVER enacts a
-containment; ``ports/iam_actions.py`` is not one of its dependencies.
+sees it and BEFORE anything is written to the audit sink (R1/P-04), every result carries a citation,
+and any consequential containment escalates: the service marks it ``requires_human_review`` and the
+surfaces route it to human-review-console (rule R8). This service NEVER enacts a containment;
+``ports/iam_actions.py`` is not one of its dependencies.
 """
 
 from __future__ import annotations
