@@ -307,7 +307,8 @@ def investigate(
     advertises an assertion it must then be careful to disregard.
 
     Rule R8: a result whose containment is consequential sets ``requires_human_review`` and is
-    ROUTED to the Hrz7 console here, in the same request that produced it. Setting the flag is not
+    ROUTED to the human-review-console here, in the same request that produced it. Setting the flag
+    is not
     the escalation; routing is. Containment is never enacted here; it is recommended and routed.
     """
     container = _container()

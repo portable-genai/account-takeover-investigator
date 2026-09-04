@@ -45,7 +45,8 @@ PLANTED_NRIC = "S1234567D"
 
 #: A second planted identifier, in the SESSION key rather than the subject key. An intake that
 #: carries the reporting mailbox in its case reference is ordinary, and the session id reaches
-#: sinks the subject id does not (the narrator's brief, the citation locator, the Hrz7 payload),
+#: sinks the subject id does not (the narrator's brief, the citation locator, the
+#: human-review-console payload),
 #: so a redaction proof that only plants in the subject cannot see those paths at all.
 PLANTED_EMAIL = "mallory.tan@example.com"
 

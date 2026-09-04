@@ -10,7 +10,7 @@ R1 to R8 mapping with an evidence file per row, plus the adopter-owned crosswalk
 
 No. It is decision support with a hard stop. The deterministic engine produces a band and a
 set of RECOMMENDED containment actions; everything above `MONITOR` sets
-`requires_human_review` and is ROUTED to the Hrz7 human-review console in the same call that
+`requires_human_review` and is ROUTED to the `human-review-console` in the same call that
 produced it (rule R8), with CRITICAL demanding two approvals rather than one. Nothing is
 enacted here: `ports/iam_actions.py` is the named enact seam and `InvestigationService` does
 not take it as a dependency, which
@@ -45,7 +45,7 @@ structural attributes only, never content. The eval gate scores `pii_safety` two
 scan plus an independent planted-literal oracle, and `tests/unit/test_not_falsely_green.py`
 proves that metric can go red.
 
-One boundary is honestly NOT closed: the runtime guardrail (**Hrz1**) is not integrated. There
+One boundary is honestly NOT closed: the runtime guardrail (`agent-guardrail-gateway`) is not integrated. There
 is no `GuardrailPort` in this repo, because no untrusted free text reaches a model on the
 shipped path. Rule R1 in [`../../COMPLIANCE.md`](../../COMPLIANCE.md) records that as Partial
 and says exactly what to bind, and when.
@@ -63,7 +63,7 @@ truncated chain still verifies perfectly on its own.
 undetected without an anchor, and proves an append after a divergence refuses rather than
 quietly re-anchoring. In production the immutable record is the locked WORM bucket
 (`infra/terraform/logging_worm.tf`, minimum 180 days, and the lock is irreversible) and
-ultimately the Hrz5 sink; the in-repo chain is the offline stand-in, and
+ultimately the `agent-observability` sink; the in-repo chain is the offline stand-in, and
 [security-faq.md](security-faq.md) states its exact limits.
 
 ### What is the model-risk story?
@@ -75,9 +75,9 @@ DATASET's own hand-labelled oracle, never against the pipeline's own verdict:
 `fusion_accuracy` at 0.80, `review_safety` at 1.0 (an escalation that should have happened and
 did not is not tradeable), `groundedness` at 0.99 and `pii_safety` at 0.99. Every one of them
 is proven able to go red in `tests/unit/test_eval_metrics_can_go_red.py`. `--mode gate`
-delegates the promotion verdict to the **Hrz4** AI-quality service and refuses to run off the
+delegates the promotion verdict to the `model-quality-gate` AI-quality service and refuses to run off the
 managed profile, under the bundle id `account-takeover-investigator`. Registering that
-bundle and its thresholds with Hrz4 is an open adopter step (principle P-08, rule R5), and a
+bundle and its thresholds with `model-quality-gate` is an open adopter step (principle P-08, rule R5), and a
 fork must relabel the golden set for its own account population or the gate measures the wrong
 thing.
 
@@ -119,10 +119,10 @@ legal basis for the audit trail this service writes.
 
 The status column in [`../../COMPLIANCE.md`](../../COMPLIANCE.md) is the authority, and it is
 written to be honest rather than flattering. The ones a compliance reviewer will care about
-most: **R1** (bind a `GuardrailPort` to Hrz1 once untrusted text reaches a model), **R2** and
-P-07's platform half (send traces and the audit record to the shared Hrz5 sink rather than
-only this process), **R4** and **R5** (register the agent card with Hrz3 and the eval bundle
-with Hrz4), **P-10** (timeouts, circuit breakers and a documented kill switch per outbound
+most: **R1** (bind a `GuardrailPort` to `agent-guardrail-gateway` once untrusted text reaches a model), **R2** and
+P-07's platform half (send traces and the audit record to the shared `agent-observability` sink rather than
+only this process), **R4** and **R5** (register the agent card with `agent-registry` and the eval bundle
+with `model-quality-gate`), **P-10** (timeouts, circuit breakers and a documented kill switch per outbound
 dependency, plus CPS 230 recovery objectives in the runbook), **P-11** (nothing to budget yet,
 because no live model call exists), and tenant isolation (object-level authorisation derived
 server-side once this service gains a queryable store). **P-05** and **R3** are dormant rather

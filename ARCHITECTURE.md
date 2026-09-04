@@ -65,7 +65,7 @@ behavioural suites cannot quietly assert different things.
 fetch raw cited session + baseline signals -> deterministic signal fusion (score, band, per-signal
 uplift lines, containment recommendations) -> redact the subject (P-04) -> grounded narration,
 discarded for the deterministic draft if it states a figure the engine did not -> already redacted
-WORM audit write -> **route any consequential containment to Hrz7 (R8)**. Containment is never
+WORM audit write -> **route any consequential containment to `human-review-console` (R8)**. Containment is never
 enacted here; it is recommended and routed for human approval. The audit actor and the review
 maker are both the verified `Principal`, never the request body. Routing happens in the same
 request that produced the result, on the API, CLI and agent surfaces alike, so an escalation never
@@ -76,7 +76,7 @@ depends on a later job that may not exist.
 |---|---|---|---|
 | `AuditSinkPort` | hash-chained SQLite WORM (commons) | Cloud Logging WORM (lazy) | placeholder |
 | `IdentityPort` | seeded personas (commons) | IAP assertion (lazy) | placeholder |
-| `ReviewRouterPort` | review-kit outbox (offline, inspectable) | Hrz7 service intake over S2S | placeholder |
+| `ReviewRouterPort` | review-kit outbox (offline, inspectable) | `human-review-console` service intake over S2S | placeholder |
 | `SessionSignalPort` | deterministic fixtures (replayable) | BigQuery session rows (lazy) | placeholder |
 | `FeatureStorePort` | deterministic fixtures (replayable) | Vertex Feature Store (lazy) | placeholder |
 | `IamActionsPort` | fixture executor (never called on the path) | MCP IAM tool (lazy) | placeholder |

@@ -124,7 +124,8 @@ class ContainmentRecommendation:
     """A recommended containment. NEVER executed by this service: it is routed for approval.
 
     Anything stronger than ``MONITOR`` is consequential, so it sets ``requires_human_review`` and
-    the investigation carrying it escalates to Hrz7 (rule R8). The engine recommends; a human,
+    the investigation carrying it escalates to human-review-console (rule R8). The engine
+    recommends; a human,
     through the review console, decides; only then would an IAM action run.
     """
 

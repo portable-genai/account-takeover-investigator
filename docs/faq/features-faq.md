@@ -47,7 +47,7 @@ managed narration adapter.
 
 No, on both counts. Containment is RECOMMENDED, never enacted. Everything above `MONITOR`
 sets `requires_human_review`, and the flag is not the escalation: the result is ROUTED through
-`ReviewRouterPort` to the Hrz7 console in the same call that produced it, on the API, the CLI
+`ReviewRouterPort` to the `human-review-console` in the same call that produced it, on the API, the CLI
 and the agent tool alike (rule R8). CRITICAL demands two approvals rather than one
 (`adapters/_review_payload.py`). The port that WOULD enact a containment
 (`ports/iam_actions.py`) is not even a dependency of `InvestigationService`, and
@@ -74,14 +74,14 @@ integration is below. Do not rebuild these in a fork.
 
 | Concern | Owned by | G4's role today |
 |---|---|---|
-| Runtime guardrail: prompt-injection defence, output screening | **Hrz1** | **not integrated.** No `GuardrailPort` exists, because no untrusted free text reaches a model on the shipped path. Rule R1 requires one the moment that changes. |
-| Governed, ACL-aware knowledge base with citations | **Hrz2** | **not used.** There is no retrieval step, so rule R3 and principle P-05 are dormant. Add retrieval and both apply. |
-| Agent registry, versioning, identity, entitlements | **Hrz3** | publishes its A2A card, built from the same tool table the runtime binds. Registering it is the adopter's step (R4). |
-| AI-quality, eval and model-risk promotion gate | **Hrz4** | `eval/run_eval.py --mode gate` is the client half and refuses to run off the managed profile; bundle id `account-takeover-investigator`. Registering the bundle is the adopter's step (R5). |
-| Observability, tracing, immutable WORM audit | **Hrz5** | emits one structural span per investigation and exports OTLP to the Hrz5 collector when configured. The audit half is local and tamper-evident today (R2 Partial). |
-| Human review and maker-checker console | **Hrz7** | fully wired (R8): every escalation routed over `review-kit`, redacted before the wire, CRITICAL demanding dual control. This repo does not re-implement the console or its workflow. |
-| Architecture and requirements validation at intake | **Rsk3** | an intake action, not a code control (R6). |
-| Customer-facing marketing and financial-promotions checks | **Mkt6** | not applicable: this service produces no marketing output (P-13, R7). |
+| Runtime guardrail: prompt-injection defence, output screening | `agent-guardrail-gateway` | **not integrated.** No `GuardrailPort` exists, because no untrusted free text reaches a model on the shipped path. Rule R1 requires one the moment that changes. |
+| Governed, ACL-aware knowledge base with citations | `enterprise-knowledge-base` | **not used.** There is no retrieval step, so rule R3 and principle P-05 are dormant. Add retrieval and both apply. |
+| Agent registry, versioning, identity, entitlements | `agent-registry` | publishes its A2A card, built from the same tool table the runtime binds. Registering it is the adopter's step (R4). |
+| AI-quality, eval and model-risk promotion gate | `model-quality-gate` | `eval/run_eval.py --mode gate` is the client half and refuses to run off the managed profile; bundle id `account-takeover-investigator`. Registering the bundle is the adopter's step (R5). |
+| Observability, tracing, immutable WORM audit | `agent-observability` | emits one structural span per investigation and exports OTLP to the `agent-observability` collector when configured. The audit half is local and tamper-evident today (R2 Partial). |
+| Human review and maker-checker console | `human-review-console` | fully wired (R8): every escalation routed over `review-kit`, redacted before the wire, CRITICAL demanding dual control. This repo does not re-implement the console or its workflow. |
+| Architecture and requirements validation at intake | `architecture-validator` | an intake action, not a code control (R6). |
+| Customer-facing marketing and financial-promotions checks | `marketing-compliance-gate` | not applicable: this service produces no marketing output (P-13, R7). |
 
 ### How does this relate to the other financial-crime systems?
 
@@ -98,8 +98,8 @@ correlation builds that above all of them rather than inside one.
 
 Three places, and it is worth being blunt about each. It ends at the RECOMMENDATION: enacting
 a lock, a step-up or a credential suspension is somebody else's action, taken after a human
-approves. It ends at the ROUTE: once the escalation reaches Hrz7, the queue, the reviewer
-assignment, the disposition and any four-eyes workflow are Hrz7's, and this repo only knows
+approves. It ends at the ROUTE: once the escalation reaches `human-review-console`, the queue, the reviewer
+assignment, the disposition and any four-eyes workflow are `human-review-console`'s, and this repo only knows
 the `review_ref` it got back. And it ends at ONE SESSION: there is no cross-account campaign
 detection, no case management, and no feedback loop that retrains anything.
 

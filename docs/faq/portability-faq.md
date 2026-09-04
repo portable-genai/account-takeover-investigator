@@ -28,8 +28,8 @@ One variable, `ATOINVEST_PROFILE`, selects the whole adapter family:
   engine facts alone. This is the dev, test and CI default and the working proof that the
   domain runs entirely off-cloud.
 - **`gcp`** is the managed stack (Cloud Logging WORM, IAP identity, Cloud Trace or an OTLP
-  collector, BigQuery sessions, Vertex Feature Store, Gemini narration, the Hrz7 console over
-  S2S, the Hrz4 promotion gate). Every cloud import is LAZY, inside the method, so the other
+  collector, BigQuery sessions, Vertex Feature Store, Gemini narration, the `human-review-console` over
+  S2S, the `model-quality-gate` promotion gate). Every cloud import is LAZY, inside the method, so the other
   two profiles import the same modules with no SDK installed.
 - **`onprem`** is the exit scaffold: fail-fast placeholders that satisfy the same Protocols and
   RAISE, naming the migration target. They raise on purpose. A review router that silently
@@ -60,7 +60,7 @@ different things.
 Eight boundaries, all in `ports/`: `SessionSignalPort` (the session under investigation and
 its recent login history), `FeatureStorePort` (the account baseline: devices on file, home
 location), `NarratorPort` (prose, and nothing consequential), `AuditSinkPort`,
-`ReviewRouterPort` (Hrz7), `IamActionsPort` (the enact seam the investigation path never
+`ReviewRouterPort` (`human-review-console`), `IamActionsPort` (the enact seam the investigation path never
 calls), the commons `IdentityPort`, and the two observability boundaries re-exported in
 `ports/observability.py`. The first two are the ones that carry your real data; the rest are
 platform plumbing. Nothing in `domain/` changes when you swap any of them, which is the whole
@@ -101,7 +101,7 @@ finished and nobody said so".
 
 Tamper-evidence is scoped to what the local sink can prove: an in-place rewrite and, with an
 anchor configured, a truncated tail. Production immutability is the managed WORM sink's job
-(Hrz5, or the locked Cloud Logging bucket in `infra/terraform/logging_worm.tf`), not this
+(`agent-observability`, or the locked Cloud Logging bucket in `infra/terraform/logging_worm.tf`), not this
 process's. The managed narration path is not a working model call today: see
 [`../model-card.md`](../model-card.md). And the golden eval set measures THIS reference
 fixture population, so a fork inherits a green gate that is measuring the wrong accounts until

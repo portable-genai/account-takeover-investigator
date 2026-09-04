@@ -21,7 +21,7 @@ subject with `pii_kit.redact` and the pattern set from `domain/pii.py` BEFORE it
 narrative brief the model would read, and again before the audit write, including every field
 of every citation (`_redact_citation`, because an intake identifier can embed the subject id).
 `adapters/_review_payload.py` redacts the subject, the summary and every citation snippet
-before the payload leaves the process for Hrz7, and it does so against EVERY jurisdiction's
+before the payload leaves the process for `human-review-console`, and it does so against EVERY jurisdiction's
 rows rather than only this deployment's, because the console is a shared sink. `agent/tools.py`
 masks a tool result before it returns, because a tool result becomes model context.
 `tests/unit/test_investigation_service.py::test_pii_in_the_subject_is_redacted_before_the_audit_write`
@@ -86,7 +86,7 @@ is not the same as an action taken.
 
 ## What about outbound service-to-service calls?
 
-The one outbound call on the shipped path is the review submission to Hrz7, built on the
+The one outbound call on the shipped path is the review submission to `human-review-console`, built on the
 shared `review-kit` client, which refuses a plaintext non-loopback URL and a missing
 bearer at construction. Its credentials (`HUMAN_REVIEW_S2S_TOKEN`, `HUMAN_REVIEW_S2S_SIGNING_KEY`) are
 deliberately distinct variables from this service's own inbound
@@ -125,17 +125,17 @@ the anchor catches a truncated tail, because a truncated chain still verifies pe
 `tests/unit/test_audit_anchor.py` proves the detection, proves the control case goes
 UNDETECTED without an anchor, and proves that an append after a divergence refuses rather than
 quietly re-anchoring. This is a stand-in for the managed WORM sink, not a replacement: in
-production the locked Cloud Logging bucket (`infra/terraform/logging_worm.tf`) and Hrz5 are
+production the locked Cloud Logging bucket (`infra/terraform/logging_worm.tf`) and `agent-observability` are
 what make the record immutable.
 
 ## What is explicitly out of scope for this repo?
 
-The prompt-injection and output-screening gateway (**Hrz1**), which this repo does NOT
+The prompt-injection and output-screening gateway (`agent-guardrail-gateway`), which this repo does NOT
 integrate today and honestly says so: there is no `GuardrailPort`, because no untrusted free
-text reaches a model on the shipped path. The governed knowledge base (**Hrz2**), unused
-because there is no retrieval step. Agent registration and entitlements (**Hrz3**), where this
-repo only publishes the card. Promotion and model documentation (**Hrz4**). The enterprise WORM
-sink and trace collector (**Hrz5**). The reviewer's console and its workflow (**Hrz7**), which
+text reaches a model on the shipped path. The governed knowledge base (`enterprise-knowledge-base`), unused
+because there is no retrieval step. Agent registration and entitlements (`agent-registry`), where this
+repo only publishes the card. Promotion and model documentation (`model-quality-gate`). The enterprise WORM
+sink and trace collector (`agent-observability`). The reviewer's console and its workflow (`human-review-console`), which
 this repo routes to and does not re-implement. Case management after the reviewer picks the
 item up is nobody's job in this repo either. See [features-faq.md](features-faq.md) for the
 full boundary map and [`../../COMPLIANCE.md`](../../COMPLIANCE.md) for the per-rule status.

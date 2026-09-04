@@ -16,7 +16,7 @@ Two flags you will look for and not find, deliberately. There is no `--cli`: the
 `[project.scripts]` entry point is named after the package, so `--package` renames the console
 script too and a second flag could only drift out of step. There is no `--dist`: `--resource`
 is one literal doing four jobs (the distribution name, the GitHub id, the A2A agent-card name,
-and the Hrz4 eval bundle id), and they are the same string on purpose so a fork's promotion
+and the `model-quality-gate` eval bundle id), and they are the same string on purpose so a fork's promotion
 record and its discovery card cannot disagree about which system they describe. Markdown prose
 is left alone unless you pass `--include-docs`.
 

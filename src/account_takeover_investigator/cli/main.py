@@ -32,7 +32,9 @@ def main(argv: list[str] | None = None) -> int:
     inv.add_argument("subject_id")
     inv.add_argument("session_id")
     inv.add_argument("--actor", default="cli-user@bank.example")
-    inv.add_argument("--tenant", default="", help="Tenant partition asserted to Hrz7.")
+    inv.add_argument(
+        "--tenant", default="", help="Tenant partition asserted to human-review-console."
+    )
 
     args = parser.parse_args(argv)
     container = build_container()

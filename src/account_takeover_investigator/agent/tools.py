@@ -113,7 +113,8 @@ def list_ato_queue(
     settings: Settings | None = None,
     container: Container | None = None,
 ) -> dict[str, Any]:
-    """List the account-takeover reviews this process has routed but not yet flushed to Hrz7.
+    """List the account-takeover reviews this process has routed but not yet flushed to
+    human-review-console.
 
     Reads the review router's outbox, so a reviewer or an operator can see what is queued for
     human disposition. Every payload is already redacted on the wire; this masks again on the way
