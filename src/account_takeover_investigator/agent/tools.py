@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 from hex_service_kit.serialization import to_jsonable
 from pii_kit import redact
 
+from ..adapters.controls import RecordingReviewRouter
 from ..config import Container, Settings, build_container
 from ..domain.fusion_engine import FusionEngine
 from ..domain.investigation_service import InvestigationService
@@ -90,22 +91,23 @@ def investigate_session(
 
     Returns:
       A JSON-safe result dict with every string masked for personal data (P-04: a tool result
-      goes into a model's context), plus ``review_ref``: where the escalation WENT. It is empty
-      only when the result did not escalate.
+      goes into a model's context), plus ``review_ref``: where the escalation WENT, and
+      ``review_routing``: routed, failed, off or not_required. The reference is empty exactly
+      when ``review_routing`` is not ``routed``.
     """
     resolved = _resolve(container, settings)
     result = _service(resolved).investigate(
         InvestigationRequest(subject_id=subject_id, session_id=session_id, tenant=tenant),
         actor=actor,
     )
-    review_ref = ""
-    if result.requires_human_review:
-        review_ref = resolved.review_router.route(result, maker=actor, tenant=tenant)
+    routing = RecordingReviewRouter(resolved.review_router)
+    review_ref = routing.route(result, maker=actor, tenant=tenant)
     payload = _redacted(to_jsonable(result))
     if not isinstance(payload, dict):  # pragma: no cover - dataclasses serialise to objects
         raise TypeError("an investigation result must serialise to a JSON object")
     # Attached after the redaction pass: it is a routing reference, not narrative text.
     payload["review_ref"] = review_ref
+    payload["review_routing"] = routing.outcome.value
     return payload
 
 
