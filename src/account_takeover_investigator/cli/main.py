@@ -7,6 +7,7 @@ import sys
 
 from hex_service_kit.logging import configure_logging
 
+from ..adapters.controls import RecordingReviewRouter
 from ..config import Container, build_container
 from ..domain.fusion_engine import FusionEngine
 from ..domain.investigation_service import InvestigationService
@@ -51,11 +52,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{result.subject} / {result.session_id}: {result.band.value} (score {result.score})")
         print(f"  signals: {', '.join(s.kind.value for s in result.signals) or 'none'}")
         print(f"  requires_human_review: {result.requires_human_review}")
-        if result.requires_human_review:
-            # Rule R8 on the CLI path too: the same escalation, the same router. A surface that
-            # only printed the flag would be a second place for an escalation to stop.
-            ref = container.review_router.route(result, maker=args.actor, tenant=args.tenant)
-            print(f"  routed to human review: {ref}")
+        # Rule R8 on the CLI path too: the same escalation, the same router. A surface that
+        # only printed the flag would be a second place for an escalation to stop.
+        routing = RecordingReviewRouter(container.review_router)
+        ref = routing.route(result, maker=args.actor, tenant=args.tenant)
+        print(f"  human review hand-off : {routing.outcome.value} {ref}".rstrip())
         return 0
 
     return 2  # pragma: no cover - argparse requires a subcommand

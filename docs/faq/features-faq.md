@@ -13,7 +13,8 @@ deviation, recent login history) and the account baseline (devices on file, home
 fuses four signals into a risk score and a band, and returns an `Investigation`: the band and
 score, one `FusedSignal` per detected anomaly with its own summary, detail, severity and
 uplift, a set of recommended containment actions with rationales, a readable narrative
-summary, the citations behind all of it, and a `review_ref` saying where the escalation WENT.
+summary, the citations behind all of it, a `review_ref` saying where the escalation WENT, and a `review_routing` value saying whether it
+was routed, failed, switched off or not required.
 
 The four signals in `domain/fusion_engine.py` are:
 
