@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import pytest
@@ -60,7 +60,6 @@ class ConsoleCall:
     #: literals (a ternary yields two), each as its set of top-level keys, or the reason it could
     #: not be read.
     bodies: list[set[str]] | str | None = None
-    notes: list[str] = field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #
@@ -90,9 +89,6 @@ def _skip_balanced(text: str, i: int) -> int:
         ch = text[i]
         if ch in "\"'`":
             i = _skip_string(text, i)
-            continue
-        if text.startswith("//", i):
-            i = text.find("\n", i) if "\n" in text[i:] else len(text)
             continue
         if ch in _OPEN:
             depth += 1
@@ -246,9 +242,39 @@ def _bodies(options: str, source: str) -> list[set[str]] | str | None:
     return "the body is built by an expression the reader does not follow: " + inner
 
 
+def _without_comments(source: str) -> str:
+    """``source`` with every comment blanked, newlines kept so line numbers still point home.
+
+    A comment that SHOWS a call (the scaffold's own wiring note does) is prose, not a call.
+    """
+    out, i = [], 0
+    while i < len(source):
+        ch = source[i]
+        if ch in "\"'`":
+            end = _skip_string(source, i)
+            out.append(source[i:end])
+            i = end
+            continue
+        if source.startswith("//", i):
+            end = source.find("\n", i)
+            end = len(source) if end == -1 else end
+            i = end
+            continue
+        if source.startswith("/*", i):
+            end = source.find("*/", i + 2)
+            end = len(source) if end == -1 else end + 2
+            out.append("\n" * source.count("\n", i, end))
+            i = end
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def console_calls(source: str, name: str = "page.tsx") -> list[ConsoleCall]:
     """Every same-origin API call in one console source file."""
     calls: list[ConsoleCall] = []
+    source = _without_comments(source)
     for match in re.finditer(r"\bfetch\s*\(", source):
         open_at = match.end() - 1
         args = _split_top(source[open_at + 1 : _skip_balanced(source, open_at) - 1])
@@ -444,6 +470,9 @@ def test_the_guard_goes_red_on_a_console_that_drifted(call: str, defect: str) ->
         "body: JSON.stringify({ alert_id: chosen, note }) });",
         'await fetch(API + "/v1/alerts/" + encodeURIComponent(id), { cache: "no-store" });',
         "await fetch(API + `/v1/alerts/${id}`);",
+        # A call a comment only SHOWS is prose; the real call beside it is what gets checked.
+        '// fetch(API + "/v1/nope", { method: "POST", body: JSON.stringify({ subject }) })\n'
+        '  /* fetch(API + "/v1/nope") */ await fetch(API + "/v1/alerts/" + id);',
     ],
 )
 def test_the_guard_passes_a_console_that_matches(call: str) -> None:
