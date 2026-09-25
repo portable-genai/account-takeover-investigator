@@ -28,6 +28,11 @@ function reviewRoutingOf(body: string): string | undefined {
   }
 }
 
+// The subjects the local profile's session fixtures seed, one per branch of the fusion engine.
+// They are suggestions only: any subject id is sent as typed, and one the fixtures do not name
+// is investigated against the quiet baseline.
+const SEEDED_SUBJECTS = ["acct-takeover", "acct-stuffing", "acct-biometric", "acct-quiet"];
+
 interface CardSummary {
   name?: string;
   description?: string;
@@ -36,8 +41,8 @@ interface CardSummary {
 
 export default function Home() {
   const [persona, setPersona] = useState(PERSONAS[0]);
-  const [subject, setSubject] = useState("Acme Holdings (FICTIONAL)");
-  const [text, setText] = useState("urgent data breach reported by the branch");
+  const [subjectId, setSubjectId] = useState(SEEDED_SUBJECTS[0]);
+  const [sessionId, setSessionId] = useState("sess-1");
   const [result, setResult] = useState("");
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -62,10 +67,10 @@ export default function Home() {
     setBusy(true);
     setFailed(false);
     try {
-      const response = await fetch(API + "/v1/triage", {
+      const response = await fetch(API + "/v1/investigate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Dev-Persona": persona },
-        body: JSON.stringify({ subject, text }),
+        body: JSON.stringify({ subject_id: subjectId, session_id: sessionId }),
       });
       const body = await response.text();
       setFailed(!response.ok);
@@ -83,7 +88,7 @@ export default function Home() {
       <h1>{card?.name ?? "Agent console"}</h1>
       <p className="sub">
         {card?.description ??
-          "Submit a case. The decision is deterministic, cited, and routed to a human reviewer when it escalates."}
+          "Investigate a login session. The decision is deterministic, cited, and routed to a human reviewer when it escalates."}
       </p>
 
       <form onSubmit={submit}>
@@ -102,17 +107,26 @@ export default function Home() {
         </fieldset>
 
         <fieldset>
-          <legend>The case</legend>
+          <legend>The session</legend>
           <label>
-            Subject
-            <input value={subject} onChange={(event) => setSubject(event.target.value)} />
+            Subject (account) id
+            <input
+              list="seeded-subjects"
+              value={subjectId}
+              onChange={(event) => setSubjectId(event.target.value)}
+            />
+            <datalist id="seeded-subjects">
+              {SEEDED_SUBJECTS.map((id) => (
+                <option key={id} value={id} />
+              ))}
+            </datalist>
           </label>
           <label>
-            Description
-            <textarea value={text} onChange={(event) => setText(event.target.value)} />
+            Session id
+            <input value={sessionId} onChange={(event) => setSessionId(event.target.value)} />
           </label>
-          <button type="submit" disabled={busy}>
-            {busy ? "Working" : "Triage this case"}
+          <button type="submit" disabled={busy || !subjectId.trim() || !sessionId.trim()}>
+            {busy ? "Working" : "Investigate this session"}
           </button>
         </fieldset>
       </form>
