@@ -213,8 +213,8 @@ per-rule evidence is in [`COMPLIANCE.md`](../COMPLIANCE.md).
   `account-takeover-investigator`. Registering that bundle and its thresholds with `model-quality-gate` is
   the adopter's step (rule R5, principle P-08). The offline `--mode smoke` run mirrors it.
 - `agent-observability` and immutable WORM audit: the tracer adapter exports OTLP to the `agent-observability`
-  collector when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and to Cloud Trace when it is not. The
-  audit half is local and tamper-evident today (rule R2 is Partial); pointing it at the shared
+  collector named by `OTEL_EXPORTER_OTLP_ENDPOINT`, and refuses to trace when it is unset: there
+  is no direct Cloud Trace path. The audit half is local and tamper-evident today (rule R2 is Partial); pointing it at the shared
   sink is yours.
 - `human-review-console` human-review and maker-checker console: fully wired (rule R8). Every escalation is
   routed through `ReviewRouterPort` over the shared `review-kit` in the same call that
