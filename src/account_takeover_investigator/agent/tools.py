@@ -23,6 +23,7 @@ from pii_kit import redact
 
 from ..adapters.controls import RecordingReviewRouter
 from ..config import Container, Settings, build_container
+from ..domain.errors import GuardrailBlockedError
 from ..domain.fusion_engine import FusionEngine
 from ..domain.investigation_service import InvestigationService
 from ..domain.models import InvestigationRequest
@@ -46,6 +47,7 @@ def _service(container: Container) -> InvestigationService:
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )
@@ -93,13 +95,18 @@ def investigate_session(
       A JSON-safe result dict with every string masked for personal data (P-04: a tool result
       goes into a model's context), plus ``review_ref``: where the escalation WENT, and
       ``review_routing``: routed, failed, off or not_required. The reference is empty exactly
-      when ``review_routing`` is not ``routed``.
+      when ``review_routing`` is not ``routed``. When the guardrail refuses a caller key (rule
+      R1), the refusal is already audited and this returns ``{"blocked": True, "reason": <str>}``
+      instead: never a partial investigation. A refused narration is withheld, not blocked.
     """
     resolved = _resolve(container, settings)
-    result = _service(resolved).investigate(
-        InvestigationRequest(subject_id=subject_id, session_id=session_id, tenant=tenant),
-        actor=actor,
-    )
+    try:
+        result = _service(resolved).investigate(
+            InvestigationRequest(subject_id=subject_id, session_id=session_id, tenant=tenant),
+            actor=actor,
+        )
+    except GuardrailBlockedError as exc:
+        return {"blocked": True, "reason": str(exc)}
     routing = RecordingReviewRouter(resolved.review_router)
     review_ref = routing.route(result, maker=actor, tenant=tenant)
     payload = _redacted(to_jsonable(result))

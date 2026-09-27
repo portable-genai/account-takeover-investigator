@@ -277,6 +277,7 @@ class DemoRun:
             self.container.feature_store,
             self.container.narrator,
             self.container.audit,
+            guardrail=self.container.guardrail,
             tracer=self.container.tracer,
             engine=FusionEngine.from_policy(self.settings.policy),
         )
@@ -808,7 +809,13 @@ def _exit_narrator(container: Any) -> Any:
         signal_lines=(),
         containment_lines=(),
     )
-    return container.narrator.narrate(brief)
+    from account_takeover_investigator.domain.narrative import narration_prompt
+
+    return container.narrator.narrate(brief, narration_prompt(brief))
+
+
+def _exit_guardrail(container: Any) -> Any:
+    return container.guardrail.screen("please summarise account status", kernel.Direction.INPUT)
 
 
 def _exit_iam_actions(container: Any) -> Any:
@@ -855,6 +862,7 @@ EXIT_CALLS: dict[str, Callable[[Any], Any]] = {
     "feature_store": _exit_feature_store,
     "iam_actions": _exit_iam_actions,
     "narrator": _exit_narrator,
+    "guardrail": _exit_guardrail,
 }
 
 

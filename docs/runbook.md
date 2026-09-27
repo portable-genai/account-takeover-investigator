@@ -153,6 +153,39 @@ not fail the request: the response carries `review_routing: "failed"` and an emp
 the failure is logged, and the console says the investigation is not queued for review. Terraform
 states the switch as `review_routing_enabled`.
 
+## Guardrail screening (rule R1)
+The narrator's one generation call is screened in both directions through a regional Model
+Armor template: `config/settings.yaml` `model_armor.template_id` (matching the template
+`infra/terraform/model_armor.tf` creates), `model_armor.host` (the regional endpoint, never
+global) and `model_armor.timeout_seconds` (the deadline on every sanitize call). INPUT is each
+caller key, masked, before anything is fetched or scored, then the narration prompt as the
+narrator receives it; OUTPUT is the narrative before it is audited or returned. With the
+guardrail on and the Model Armor adapter bound, the managed profile REFUSES TO BOOT when no
+template is named, so a misconfiguration is a loud failure at startup rather than at the first
+screen call.
+
+`ATOINVEST_GUARDRAIL` switches it, read in three states: unset is on, `true`/`false` wins, and an
+emptied or unrecognised value refuses at boot. Off binds a disabled guardrail that allows
+everything unchanged, logs one warning at startup, and needs no template.
+
+What a refusal does, by where it happens. Every refusal is audited `Decision.BLOCKED`, never
+carrying the refused text, and the `guardrail_blocks` log metric counts those records.
+
+- A refused caller key raises `GuardrailBlockedError`: the API answers 400, the CLI exits 1, and
+  the agent tool returns `{"blocked": true, "reason": ...}`, never a partial investigation.
+- A refused narration prompt or narrative withholds the prose: the investigation is returned and
+  audited as usual with fixed "narration withheld" text in place of the narrative, because the
+  score, band, signals and containments are the engine's and do not depend on it.
+- A guardrail that cannot decide (Model Armor errored or timed out) fails CLOSED: the request
+  fails after the refusal is audited. A Model Armor screen where not every filter ran is a
+  refusal, not an allow, and is handled like any other refusal above.
+
+Terraform states the switch as `guardrail_enabled`, and `model_armor_full_capabilities` (default
+`true`) gates the malicious-URI filter and multi-language detection: this repo's own region,
+asia-southeast1, refuses a template that carries either with `CAPABILITY_NOT_SUPPORTED`, so a
+deployment there MUST set the variable `false` in its own tfvars before the first apply, or the
+template creation itself fails.
+
 ## Supply chain
 Installs come from the committed lockfiles. After changing a dependency run `make lock` and commit
 both files, then `make audit` (`pip-audit` over both locks). CI runs the same audit as a hard

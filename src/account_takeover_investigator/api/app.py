@@ -78,6 +78,7 @@ from ..config import (
     end_user_auth_kind,
     resolve_profile,
 )
+from ..domain.errors import GuardrailBlockedError
 from ..domain.fusion_engine import FusionEngine
 from ..domain.investigation_service import InvestigationService
 from ..domain.models import InvestigationRequest
@@ -125,6 +126,7 @@ def _investigation_service(container: Container) -> InvestigationService:
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )
@@ -320,17 +322,25 @@ def investigate(
     ROUTED to the human-review-console here, in the same request that produced it. Setting the flag
     is not
     the escalation; routing is. Containment is never enacted here; it is recommended and routed.
+
+    Rule R1: the guardrail screens the caller keys and the narration prompt INPUT and the
+    narrative OUTPUT (``domain/investigation_service.py``). A refused key is already audited
+    BLOCKED inside the service and answers 400 here, never a partial investigation; a refused
+    narration is withheld and the investigation is answered as usual.
     """
     container = _container()
     service = _investigation_service(container)
-    result = service.investigate(
-        InvestigationRequest(
-            subject_id=request.subject_id,
-            session_id=request.session_id,
-            tenant=principal.tenant,
-        ),
-        actor=principal.actor,
-    )
+    try:
+        result = service.investigate(
+            InvestigationRequest(
+                subject_id=request.subject_id,
+                session_id=request.session_id,
+                tenant=principal.tenant,
+            ),
+            actor=principal.actor,
+        )
+    except GuardrailBlockedError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     # The hand-off never fails an already-scored, already-audited investigation; the response
     # says what happened to it instead (the fleet's runtime-control contract).
     routing = RecordingReviewRouter(container.review_router)

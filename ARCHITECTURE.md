@@ -23,8 +23,10 @@ startup and Terraform serving authorization until its live integration test exis
   groundedness oracle), `pii.py` (jurisdiction pattern selection + order),
   `investigation_service.py` (the orchestrator).
 - `ports/` : `@runtime_checkable` Protocols (`AuditSinkPort`, `ReviewRouterPort`,
-  `SessionSignalPort`, `FeatureStorePort`, `IamActionsPort`, `NarratorPort`; identity uses the
-  commons `IdentityPort`), re-exported once with the `PORT_PROTOCOLS` map. `identity.py` adds
+  `SessionSignalPort`, `FeatureStorePort`, `IamActionsPort`, `NarratorPort`, `GuardrailPort`;
+  identity uses the commons `IdentityPort`), re-exported once with the `PORT_PROTOCOLS` map.
+  `guardrail.py` screens the one generation call the narrator makes, input before and output
+  after (rule R1). `identity.py` adds
   this service's own identity vocabulary: what an adapter DECLARES about the end-user
   authentication it provides (`VERIFIED` / `CLIENT_ASSERTED` / `UNIMPLEMENTED`), which is what the
   loopback exposure guard reads, plus the refusal type that carries a status and a reason when no
@@ -62,10 +64,17 @@ data only). `contract/canonical.py` holds ONE canonical request per port, so the
 behavioural suites cannot quietly assert different things.
 
 ## Request pipeline (`InvestigationService.investigate`, then the caller)
-fetch raw cited session + baseline signals -> deterministic signal fusion (score, band, per-signal
-uplift lines, containment recommendations) -> redact the subject (P-04) -> grounded narration,
-discarded for the deterministic draft if it states a figure the engine did not -> already redacted
-WORM audit write -> **route any consequential containment to `human-review-console` (R8)**. Containment is never
+redact the subject and session keys (P-04) -> **guardrail screen INPUT** each masked key (rule
+R1) -> fetch raw cited session + baseline signals -> deterministic signal fusion (score, band,
+per-signal uplift lines, containment recommendations) -> **guardrail screen INPUT** the narration
+prompt, the brief rendered as the narrator receives it -> grounded narration, discarded for the
+deterministic draft if it states a figure the engine did not -> **guardrail screen OUTPUT**
+whichever narrative survives that fallback -> already redacted WORM audit write -> **route any
+consequential containment to `human-review-console` (R8)**. A refused key is audited
+`Decision.BLOCKED` and raises before anything is fetched or scored, never a partial
+investigation. Narration is optional by design, so a refused prompt or narrative is audited
+`Decision.BLOCKED` and replaced by fixed "narration withheld" text while the engine's result
+stands. A guardrail that cannot decide fails closed at every step. Containment is never
 enacted here; it is recommended and routed for human approval. The audit actor and the review
 maker are both the verified `Principal`, never the request body. Routing happens in the same
 request that produced the result, on the API, CLI and agent surfaces alike, so an escalation never
@@ -81,6 +90,7 @@ depends on a later job that may not exist.
 | `FeatureStorePort` | deterministic fixtures (replayable) | Vertex Feature Store (lazy) | placeholder |
 | `IamActionsPort` | fixture executor (never called on the path) | MCP IAM tool (lazy) | placeholder |
 | `NarratorPort` | grounded deterministic draft | Gemini restating the brief (lazy) | placeholder |
+| `GuardrailPort` | heuristic injection/jailbreak screen (deterministic) | Model Armor sanitize (lazy) | placeholder |
 
 The on-prem placeholders RAISE. A review router that silently returned would convert every
 consequential result into an unreviewed one, which is worse than a missing feature.

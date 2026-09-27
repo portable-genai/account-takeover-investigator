@@ -52,6 +52,7 @@ def _investigation_service(container: object) -> InvestigationService:
         container.feature_store,  # type: ignore[attr-defined]
         container.narrator,  # type: ignore[attr-defined]
         container.audit,  # type: ignore[attr-defined]
+        guardrail=container.guardrail,  # type: ignore[attr-defined]
         tracer=container.tracer,  # type: ignore[attr-defined]
         engine=FusionEngine.from_policy(container.settings.policy),  # type: ignore[attr-defined]
     )

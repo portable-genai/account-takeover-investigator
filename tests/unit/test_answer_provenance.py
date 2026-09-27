@@ -53,10 +53,10 @@ def test_a_call_that_searched_says_so_and_the_next_request_starts_fresh(
 ) -> None:
     original = LocalNarratorAdapter.narrate
 
-    def searching(self: LocalNarratorAdapter, brief: NarrativeBrief) -> str:
+    def searching(self: LocalNarratorAdapter, brief: NarrativeBrief, prompt: str) -> str:
         provenance.note_model("fake-searching-model")
         provenance.note_search()
-        return original(self, brief)
+        return original(self, brief, prompt)
 
     monkeypatch.setattr(LocalNarratorAdapter, "narrate", searching)
     headers = _investigate(api_client)

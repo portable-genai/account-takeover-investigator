@@ -16,6 +16,11 @@ from ..domain.narrative import NarrativeBrief
 
 @runtime_checkable
 class NarratorPort(Protocol):
-    def narrate(self, brief: NarrativeBrief) -> str:
-        """Return a prose investigation summary restating ONLY the brief's engine facts."""
+    def narrate(self, brief: NarrativeBrief, prompt: str) -> str:
+        """Return a prose investigation summary restating ONLY the brief's engine facts.
+
+        ``prompt`` is :func:`~..domain.narrative.narration_prompt` of ``brief`` as the guardrail
+        handed it back after the INPUT screen (rule R1). A model-backed adapter sends THIS
+        string, never one it renders itself, so the text a model reads is the text screened.
+        """
         ...

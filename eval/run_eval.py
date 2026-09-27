@@ -106,6 +106,7 @@ def run_smoke(dataset: Path) -> EvalReport:
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=engine,
     )

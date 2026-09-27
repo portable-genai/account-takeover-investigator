@@ -447,6 +447,12 @@ _REBOUND_SETTINGS = "\n".join(
             for p in ("local", "gcp")
         ],
         f"    onprem: {_PKG}.adapters.onprem.narrator:OnPremNarratorAdapter",
+        "  guardrail:",
+        *[
+            f"    {p}: {_PKG}.adapters.local.guardrail:LocalHeuristicGuardrailAdapter"
+            for p in ("local", "gcp")
+        ],
+        f"    onprem: {_PKG}.adapters.onprem.guardrail:OnPremGuardrailAdapter",
     ]
 )
 

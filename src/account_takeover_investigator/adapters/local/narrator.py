@@ -23,6 +23,7 @@ class LocalNarratorAdapter:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    def narrate(self, brief: NarrativeBrief) -> str:
+    def narrate(self, brief: NarrativeBrief, prompt: str) -> str:
+        # No model reads ``prompt`` here: the draft is composed from the brief's engine facts.
         provenance.note_model(self.MODEL)
         return draft_narrative(brief)

@@ -1,8 +1,9 @@
 """GCP NarratorPort: the investigation summary drafted by Gemini (lazy SDK import).
 
-The model is given the engine brief and asked to restate it. The service checks the result for
-groundedness and discards it for the deterministic draft on failure, so a fabricated figure never
-reaches a reviewer. The ``google-genai`` import is lazy, so the offline profiles import this
+The model is sent ``prompt``, the rendering of the engine brief the guardrail screened INPUT
+(rule R1), and asked to restate it. The service checks the reply for groundedness, discards it
+for the deterministic draft on failure, and screens what survives OUTPUT, so a fabricated figure
+never reaches a reviewer. The ``google-genai`` import is lazy, so the offline profiles import this
 module with no SDK present.
 """
 
@@ -18,7 +19,7 @@ class CloudNarratorAdapter:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    def narrate(self, brief: NarrativeBrief) -> str:  # pragma: no cover - needs live GCP
+    def narrate(self, brief: NarrativeBrief, prompt: str) -> str:  # pragma: no cover - live GCP
         # Lazy import: absent in the offline profile and in CI (hence import-not-found ignore).
         from google import genai
 

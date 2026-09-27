@@ -18,6 +18,7 @@
 # it assert the audit-log name is derived rather than pinned by hand.
 
 mock_provider "google" {}
+mock_provider "google-beta" {}
 
 
 # worm_locked has NO DEFAULT (variables.tf): the audit bucket's lock is irreversible, so a plan
@@ -234,6 +235,58 @@ run "serving_edge_contract" {
   assert {
     condition     = google_compute_global_forwarding_rule.edge[0].port_range == "443"
     error_message = "The edge must listen on 443 only: there is no plaintext listener to redirect from."
+  }
+}
+
+# Rule R1: the guardrail template. Full capabilities by default, but asia-southeast1 (this
+# repo's own region) refuses the malicious-URI filter and multi-language detection with
+# CAPABILITY_NOT_SUPPORTED, so a deployment there must disable both explicitly (variables.tf).
+run "guardrail_template_defaults_to_full_capabilities" {
+  command = plan
+
+  variables {
+    project_id    = "fictional-agent-project"
+    enable_vpc_sc = false
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.filter_config[0].malicious_uri_filter_settings) == 1
+    error_message = "model_armor_full_capabilities defaults to true, so the malicious-URI filter must be present by default."
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.template_metadata[0].multi_language_detection) == 1
+    error_message = "model_armor_full_capabilities defaults to true, so multi-language detection must be present by default."
+  }
+
+  assert {
+    condition     = google_model_armor_template.guardrail.template_metadata[0].ignore_partial_invocation_failures == false
+    error_message = "A screen where some filters were skipped or failed must never be treated as complete."
+  }
+
+  assert {
+    condition     = google_model_armor_template.guardrail.template_id == "${local.render_repository}-guardrail"
+    error_message = "The template id must match config/settings.yaml model_armor.template_id, or a zero-edit deploy names a template nothing creates."
+  }
+}
+
+run "guardrail_template_narrows_in_a_region_that_refuses_the_extra_capabilities" {
+  command = plan
+
+  variables {
+    project_id                    = "fictional-agent-project"
+    enable_vpc_sc                 = false
+    model_armor_full_capabilities = false
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.filter_config[0].malicious_uri_filter_settings) == 0
+    error_message = "model_armor_full_capabilities = false must produce a plan with no malicious-URI block, which is what lets this repo's own region (asia-southeast1) apply at all."
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.template_metadata[0].multi_language_detection) == 0
+    error_message = "model_armor_full_capabilities = false must also omit multi-language detection, the other capability the same region refuses."
   }
 }
 
