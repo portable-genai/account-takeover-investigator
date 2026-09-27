@@ -97,11 +97,13 @@ principle side.
   fabricate. Add a managed-profile run that scores real narration groundedness against the same
   golden cases, and register the bundle `account-takeover-investigator` and its thresholds
   with `model-quality-gate` so `--mode gate` has an authority to ask.
-- **Prompt-injection screening through `agent-guardrail-gateway`** (R1). Not required by the shipped path, because
-  the brief contains only engine-produced labels and numbers. It becomes required the moment
-  any free-form text (an analyst note, a device-intelligence vendor's description, a customer
-  message) is added to the brief: bind a `GuardrailPort`, screen input and output, and fail
-  closed to deterministic-only when the screen is unavailable.
+- **Prompt-injection screening through `agent-guardrail-gateway`** (R1). Done:
+  `ports/guardrail.py` screens each caller key and the narration prompt INPUT before the
+  narrator is called, and the narrative OUTPUT before anything downstream uses it. The screen
+  wraps the STEP, not the string, so it stays in place unchanged the moment any free-form text
+  (an analyst note, a device-intelligence vendor's description, a customer message) is added
+  to the brief. A refused narration is withheld and audited; a guardrail that cannot decide
+  refuses the request.
 
 Until these are complete the system is safe to run offline: the deterministic engine plus the
 grounded local narrator produce the full cited investigation, the escalation is really routed,

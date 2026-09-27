@@ -197,10 +197,12 @@ are owned by sibling platform services; integrate rather than rebuild them. The 
 the honest state of each integration, is in [`faq/features-faq.md`](faq/features-faq.md); the
 per-rule evidence is in [`COMPLIANCE.md`](../COMPLIANCE.md).
 
-- `agent-guardrail-gateway`: **not integrated today.** There is no `GuardrailPort` in
-  `ports/`, because no untrusted free text reaches a model on the shipped path (the narrator
-  is handed engine facts and an already-masked subject). Rule R1 says bind one the moment
-  that changes. In-repo redaction (`domain/pii.py`) is not a substitute for the gateway.
+- `agent-guardrail-gateway`: **integrated.** `ports/guardrail.py` screens the narrator's one
+  generation call in both directions (rule R1): the caller keys and the narration prompt before
+  the call, the narrative after it. A regional Model Armor template under the managed profile,
+  a deterministic heuristic offline, a fail-fast placeholder on-prem. A model bound behind
+  `NarratorPort` must send the `prompt` it is handed, which is the text the screen passed. In-repo redaction (`domain/pii.py`) runs alongside it, not
+  instead of it.
 - `enterprise-knowledge-base` governed knowledge base: **not used.** There is no retrieval port, so rule R3 and
   principle P-05 do not apply yet. Add one and both become mandatory together.
 - `agent-registry`: the A2A card is published at `/.well-known/agent-card.json` and

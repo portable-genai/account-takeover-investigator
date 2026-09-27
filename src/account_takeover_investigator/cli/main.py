@@ -9,6 +9,7 @@ from hex_service_kit.logging import configure_logging
 
 from ..adapters.controls import RecordingReviewRouter
 from ..config import Container, build_container
+from ..domain.errors import GuardrailBlockedError
 from ..domain.fusion_engine import FusionEngine
 from ..domain.investigation_service import InvestigationService
 from ..domain.models import InvestigationRequest
@@ -20,6 +21,7 @@ def _service(container: Container) -> InvestigationService:
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )
@@ -43,12 +45,17 @@ def main(argv: list[str] | None = None) -> int:
     configure_logging(container.settings.profile, service="account-takeover-investigator")
 
     if args.command == "investigate":
-        result = _service(container).investigate(
-            InvestigationRequest(
-                subject_id=args.subject_id, session_id=args.session_id, tenant=args.tenant
-            ),
-            actor=args.actor,
-        )
+        try:
+            result = _service(container).investigate(
+                InvestigationRequest(
+                    subject_id=args.subject_id, session_id=args.session_id, tenant=args.tenant
+                ),
+                actor=args.actor,
+            )
+        except GuardrailBlockedError as exc:
+            # Rule R1: already audited BLOCKED inside the service. Never a partial investigation.
+            print(f"blocked by guardrail: {exc}", file=sys.stderr)
+            return 1
         print(f"{result.subject} / {result.session_id}: {result.band.value} (score {result.score})")
         print(f"  signals: {', '.join(s.kind.value for s in result.signals) or 'none'}")
         print(f"  requires_human_review: {result.requires_human_review}")

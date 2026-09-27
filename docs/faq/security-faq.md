@@ -130,9 +130,10 @@ what make the record immutable.
 
 ## What is explicitly out of scope for this repo?
 
-The prompt-injection and output-screening gateway (`agent-guardrail-gateway`), which this repo does NOT
-integrate today and honestly says so: there is no `GuardrailPort`, because no untrusted free
-text reaches a model on the shipped path. The governed knowledge base (`enterprise-knowledge-base`), unused
+Prompt-injection and output screening is NOT on this list: `agent-guardrail-gateway` is
+integrated, `ports/guardrail.py` screening the narrator's one generation call in both directions
+through a regional Model Armor template (`adapters/gcp/guardrail.py`). Out of scope: the governed
+knowledge base (`enterprise-knowledge-base`), unused
 because there is no retrieval step. Agent registration and entitlements (`agent-registry`), where this
 repo only publishes the card. Promotion and model documentation (`model-quality-gate`). The enterprise WORM
 sink and trace collector (`agent-observability`). The reviewer's console and its workflow (`human-review-console`), which

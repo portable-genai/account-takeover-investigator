@@ -26,6 +26,10 @@ deployment accordingly: see the exposure section of [runbook.md](runbook.md).
      a consequential result must still reach a human, so this placeholder RAISES rather than
      returning quietly. An adapter that dropped the escalation would leave the service
      auto-executing with the appearance of review.
+   - `GuardrailPort` -> the client's own prompt / response screening backend. Rule R1 does not
+     relax on exit either: this placeholder RAISES rather than allowing traffic through
+     unscreened, because a guardrail that fails open is worse than a service that fails to
+     start.
 3. Bind the new adapters under `onprem` in `config/settings.yaml` (and in
    `config.DEFAULT_BINDINGS`, which the settings test holds equal to it) and run the gate.
 

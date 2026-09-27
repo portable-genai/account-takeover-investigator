@@ -16,6 +16,7 @@ from hex_service_kit.identity import IdentityPort
 
 from .audit import AuditSinkPort
 from .feature_store import FeatureStorePort
+from .guardrail import GuardrailPort
 from .iam_actions import IamActionsPort
 from .identity import (
     CLIENT_ASSERTED,
@@ -44,6 +45,7 @@ PORT_PROTOCOLS: dict[str, type] = {
     "feature_store": FeatureStorePort,
     "iam_actions": IamActionsPort,
     "narrator": NarratorPort,
+    "guardrail": GuardrailPort,
     "tracer": ObservabilityTracerPort,
     "evaluation": EvaluationGatePort,
 }
@@ -61,6 +63,7 @@ __all__ = [
     "AuditSinkPort",
     "EndUserAuthUnavailableError",
     "FeatureStorePort",
+    "GuardrailPort",
     "IamActionsPort",
     "IdentityPort",
     "NarratorPort",

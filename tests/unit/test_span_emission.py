@@ -58,6 +58,7 @@ def _investigate(request: InvestigationRequest) -> tuple[_RecordingTracer, Inves
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )

@@ -45,10 +45,13 @@ structural attributes only, never content. The eval gate scores `pii_safety` two
 scan plus an independent planted-literal oracle, and `tests/unit/test_not_falsely_green.py`
 proves that metric can go red.
 
-One boundary is honestly NOT closed: the runtime guardrail (`agent-guardrail-gateway`) is not integrated. There
-is no `GuardrailPort` in this repo, because no untrusted free text reaches a model on the
-shipped path. Rule R1 in [`../../COMPLIANCE.md`](../../COMPLIANCE.md) records that as Partial
-and says exactly what to bind, and when.
+The runtime guardrail (`agent-guardrail-gateway`) is integrated: `ports/guardrail.py` screens
+the narrator's one generation call in both directions (rule R1), the caller keys and the
+narration prompt before it and the narrative after it, through a regional Model Armor template
+under the managed profile and a deterministic heuristic offline. A refused key is audited
+`Decision.BLOCKED` and refuses the request rather than returning a partial investigation; a
+refused narration is audited the same way and withheld. Rule R1 in
+[`../../COMPLIANCE.md`](../../COMPLIANCE.md) records this as Covered.
 
 ### How is the work auditable and reproducible?
 
@@ -119,7 +122,7 @@ legal basis for the audit trail this service writes.
 
 The status column in [`../../COMPLIANCE.md`](../../COMPLIANCE.md) is the authority, and it is
 written to be honest rather than flattering. The ones a compliance reviewer will care about
-most: **R1** (bind a `GuardrailPort` to `agent-guardrail-gateway` once untrusted text reaches a model), **R2** and
+most: **R2** and
 P-07's platform half (send traces and the audit record to the shared `agent-observability` sink rather than
 only this process), **R4** and **R5** (register the agent card with `agent-registry` and the eval bundle
 with `model-quality-gate`), **P-10** (timeouts, circuit breakers and a documented kill switch per outbound

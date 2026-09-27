@@ -61,6 +61,37 @@ def brief_from_assessment(
     )
 
 
+def narration_prompt(brief: NarrativeBrief) -> str:
+    """The prompt the generation step receives: every field of the brief, rendered as sent.
+
+    This is the string the guardrail screens INPUT (rule R1) and the string a managed narrator
+    sends, so what a model reads is exactly what passed the screen. Every field is rendered,
+    the masked subject and session keys included, because both started as caller text.
+    """
+    lines = [
+        f"Subject: {brief.subject}",
+        f"Session: {brief.session_id}",
+        f"Band: {brief.band}",
+        f"Score: {brief.score:.2f}",
+        "Signals:",
+        *(f"- {line}" for line in brief.signal_lines),
+        "Recommended containment:",
+        *(f"- {line}" for line in brief.containment_lines),
+    ]
+    return "\n".join(lines)
+
+
+#: What the investigation carries in place of prose when the guardrail refuses the narration
+#: (rule R1). Narration is optional by design here, so a refusal withholds the prose rather than
+#: the investigation: the score, band, signals and containments are the engine's and stand. It
+#: states no number, so it is grounded by construction, and it quotes nothing from the brief,
+#: so none of the refused text survives into the result, the audit record or the review payload.
+NARRATION_WITHHELD = (
+    "Narration withheld: the guardrail refused it. The score, band, signals and recommended "
+    "containment are the engine's own and stand without it."
+)
+
+
 def draft_narrative(brief: NarrativeBrief) -> str:
     """The deterministic, grounded summary: the offline narrator and the discard-on-failure path.
 

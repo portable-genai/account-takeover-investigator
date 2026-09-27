@@ -31,6 +31,8 @@ from account_takeover_investigator.domain.kernel import (
     AuditEvent,
     Citation,
     Decision,
+    Direction,
+    GuardrailVerdict,
     Severity,
 )
 from account_takeover_investigator.domain.models import (
@@ -40,6 +42,7 @@ from account_takeover_investigator.domain.models import (
 )
 from account_takeover_investigator.domain.narrative import (
     NarrativeBrief,
+    narration_prompt,
 )
 
 from tests.fixtures import sample_cases
@@ -82,6 +85,10 @@ CANONICAL_BRIEF = NarrativeBrief(
 
 #: The inbound transport context every identity implementation is handed.
 CANONICAL_CONTEXT = RequestContext(headers={"x-dev-persona": "auditor"})
+
+#: The text every guardrail-port implementation screens: obviously benign, so the offline family
+#: must ANSWER (allow it) rather than the canonical call happening to trip its own heuristic.
+CANONICAL_GUARDRAIL_TEXT = "Session sess-001 for acct-REDACTED scored 1.00, banded CRITICAL."
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,11 +153,23 @@ def _iam_answered(adapter: Any, result: Any) -> bool:
 
 
 def _narrator_invoke(adapter: Any) -> Any:
-    return adapter.narrate(CANONICAL_BRIEF)
+    return adapter.narrate(CANONICAL_BRIEF, narration_prompt(CANONICAL_BRIEF))
 
 
 def _narrator_answered(_adapter: Any, result: Any) -> bool:
     return isinstance(result, str) and CANONICAL_BRIEF.band in result.lower()
+
+
+def _guardrail_invoke(adapter: Any) -> Any:
+    return adapter.screen(CANONICAL_GUARDRAIL_TEXT, Direction.INPUT)
+
+
+def _guardrail_answered(_adapter: Any, result: Any) -> bool:
+    return (
+        isinstance(result, GuardrailVerdict)
+        and result.allowed is True
+        and result.sanitized_text == CANONICAL_GUARDRAIL_TEXT
+    )
 
 
 def _tracer_invoke(adapter: Any) -> Any:
@@ -220,6 +239,14 @@ CANONICAL_CALLS: dict[str, PortCase] = {
         # The lazy `google.genai` import is the first thing the managed adapter does.
         managed_refusal=(ImportError,),
         detail="draft a grounded investigation summary",
+    ),
+    "guardrail": PortCase(
+        invoke=_guardrail_invoke,
+        answered=_guardrail_answered,
+        # The lazy `google.cloud.modelarmor_v1` import is the first thing the managed adapter
+        # does when actually screening (construction alone needs no SDK).
+        managed_refusal=(ImportError,),
+        detail="screen one generation call's text and return an allow/block verdict",
     ),
     "tracer": PortCase(
         invoke=_tracer_invoke,

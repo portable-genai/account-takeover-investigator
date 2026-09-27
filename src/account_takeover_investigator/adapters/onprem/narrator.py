@@ -17,7 +17,7 @@ class OnPremNarratorAdapter:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
 
-    def narrate(self, brief: NarrativeBrief) -> str:
+    def narrate(self, brief: NarrativeBrief, prompt: str) -> str:
         raise NotImplementedError(
             "on-prem narration is a portability placeholder: bind the client's own in-tenancy "
             "model (see docs/onprem-migration.md)"

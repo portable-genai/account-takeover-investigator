@@ -46,6 +46,18 @@ iap_audience: ${ATOINVEST_IAP_AUDIENCE:-}
 # deliberately distinct from this service's own inbound ATOINVEST_S2S_TOKEN.
 review_url: ${HUMAN_REVIEW_URL:-}
 
+# Rule R1: the Model Armor template the `gcp` guardrail adapter screens the caller keys, the
+# narration prompt and the narrative through, and the regional host it calls (never the global endpoint, P-03).
+# `template_id` matches the template `infra/terraform/model_armor.tf` creates, so a zero-edit
+# deploy names a template its own Terraform provisions. Guardrail on (ATOINVEST_GUARDRAIL, unset
+# means on) under the managed profile REFUSES TO BOOT when template_id is empty and the bound
+# adapter is ModelArmorGuardrailAdapter; ATOINVEST_GUARDRAIL=off states the guardrail off.
+model_armor:
+  template_id: ${ATOINVEST_MODEL_ARMOR_TEMPLATE:-account-takeover-investigator-guardrail}
+  host: ${ATOINVEST_MODEL_ARMOR_HOST:-modelarmor.asia-southeast1.rep.googleapis.com}
+  # The deadline on every sanitize call. A timeout fails CLOSED (audited, then refused).
+  timeout_seconds: 10.0
+
 # Bank-owned fusion policy: the thresholds and per-signal weights the deterministic engine reads.
 # These are the adopter's numbers, lifted out of engine code so a bank tunes them here without a
 # code edit. Any key omitted keeps the engine default (see domain/policy.py). Illustrative only.
@@ -116,3 +128,10 @@ adapters:
     local: account_takeover_investigator.adapters.local.narrator:LocalNarratorAdapter
     gcp: account_takeover_investigator.adapters.gcp.narrator:CloudNarratorAdapter
     onprem: account_takeover_investigator.adapters.onprem.narrator:OnPremNarratorAdapter
+  # Rule R1: screens the caller keys and the narration prompt (input, before) and the
+  # narrative (output, after). local is a deterministic heuristic stand-in; there is no offline emulator for
+  # Model Armor.
+  guardrail:
+    local: account_takeover_investigator.adapters.local.guardrail:LocalHeuristicGuardrailAdapter
+    gcp: account_takeover_investigator.adapters.gcp.guardrail:ModelArmorGuardrailAdapter
+    onprem: account_takeover_investigator.adapters.onprem.guardrail:OnPremGuardrailAdapter

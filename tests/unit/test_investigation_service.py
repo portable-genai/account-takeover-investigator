@@ -31,6 +31,7 @@ def _service(**overrides: object) -> tuple[InvestigationService, object]:
         container.feature_store,
         narrator,  # type: ignore[arg-type]
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )
@@ -72,7 +73,7 @@ def test_the_narrative_is_grounded_in_engine_output() -> None:
 
 def test_an_ungrounded_model_draft_is_discarded_for_the_deterministic_one() -> None:
     class _Fabricator:
-        def narrate(self, brief: NarrativeBrief) -> str:
+        def narrate(self, brief: NarrativeBrief, prompt: str) -> str:
             return "The account lost 999999.99 dollars to the attacker overnight."
 
     service, _ = _service(narrator=_Fabricator())
@@ -111,9 +112,9 @@ def test_no_planted_identifier_reaches_the_model_the_worm_record_or_the_console(
         def __init__(self, inner: object) -> None:
             self._inner = inner
 
-        def narrate(self, brief: NarrativeBrief) -> str:
+        def narrate(self, brief: NarrativeBrief, prompt: str) -> str:
             seen.append(brief)
-            return self._inner.narrate(brief)  # type: ignore[attr-defined]
+            return self._inner.narrate(brief, prompt)  # type: ignore[attr-defined]
 
     settings = Settings(profile="local", audit_path=":memory:", tenant=sample_cases.TENANT)
     container = build_container(settings)
@@ -122,6 +123,7 @@ def test_no_planted_identifier_reaches_the_model_the_worm_record_or_the_console(
         container.feature_store,
         _Tap(container.narrator),  # type: ignore[arg-type]
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )
@@ -164,6 +166,7 @@ def test_the_investigation_path_never_enacts_a_containment() -> None:
         container.feature_store,
         container.narrator,
         container.audit,
+        guardrail=container.guardrail,
         tracer=container.tracer,
         engine=FusionEngine.from_policy(container.settings.policy),
     )

@@ -75,7 +75,7 @@ integration is below. Do not rebuild these in a fork.
 
 | Concern | Owned by | G4's role today |
 |---|---|---|
-| Runtime guardrail: prompt-injection defence, output screening | `agent-guardrail-gateway` | **not integrated.** No `GuardrailPort` exists, because no untrusted free text reaches a model on the shipped path. Rule R1 requires one the moment that changes. |
+| Runtime guardrail: prompt-injection defence, output screening | `agent-guardrail-gateway` | **integrated.** `ports/guardrail.py` screens the narrator's one generation call in both directions (rule R1), the caller keys included: a regional Model Armor template under the managed profile, a deterministic heuristic offline, a fail-fast placeholder on-prem. |
 | Governed, ACL-aware knowledge base with citations | `enterprise-knowledge-base` | **not used.** There is no retrieval step, so rule R3 and principle P-05 are dormant. Add retrieval and both apply. |
 | Agent registry, versioning, identity, entitlements | `agent-registry` | publishes its A2A card, built from the same tool table the runtime binds. Registering it is the adopter's step (R4). |
 | AI-quality, eval and model-risk promotion gate | `model-quality-gate` | `eval/run_eval.py --mode gate` is the client half and refuses to run off the managed profile; bundle id `account-takeover-investigator`. Registering the bundle is the adopter's step (R5). |
