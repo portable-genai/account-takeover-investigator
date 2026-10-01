@@ -241,22 +241,23 @@ run "serving_edge_contract" {
 # Rule R1: the guardrail template. Full capabilities by default, but asia-southeast1 (this
 # repo's own region) refuses the malicious-URI filter and multi-language detection with
 # CAPABILITY_NOT_SUPPORTED, so a deployment there must disable both explicitly (variables.tf).
-run "guardrail_template_defaults_to_full_capabilities" {
+run "guardrail_template_takes_full_capabilities_when_stated" {
   command = plan
 
   variables {
-    project_id    = "fictional-agent-project"
-    enable_vpc_sc = false
+    project_id                    = "fictional-agent-project"
+    enable_vpc_sc                 = false
+    model_armor_full_capabilities = true
   }
 
   assert {
     condition     = length(google_model_armor_template.guardrail.filter_config[0].malicious_uri_filter_settings) == 1
-    error_message = "model_armor_full_capabilities defaults to true, so the malicious-URI filter must be present by default."
+    error_message = "model_armor_full_capabilities stated true, so the malicious-URI filter must be present when stated."
   }
 
   assert {
     condition     = length(google_model_armor_template.guardrail.template_metadata[0].multi_language_detection) == 1
-    error_message = "model_armor_full_capabilities defaults to true, so multi-language detection must be present by default."
+    error_message = "model_armor_full_capabilities stated true, so multi-language detection must be present when stated."
   }
 
   assert {
@@ -267,6 +268,27 @@ run "guardrail_template_defaults_to_full_capabilities" {
   assert {
     condition     = google_model_armor_template.guardrail.template_id == "${local.render_repository}-guardrail"
     error_message = "The template id must match config/settings.yaml model_armor.template_id, or a zero-edit deploy names a template nothing creates."
+  }
+}
+
+# Slice 7 of the 2026-09-23 posture rule: a control that is not irreversible defaults off in
+# code, so the regional capabilities arrive only when a deployment states them.
+run "guardrail_regional_capabilities_are_declined_unless_stated" {
+  command = plan
+
+  variables {
+    project_id    = "fictional-agent-project"
+    enable_vpc_sc = false
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.filter_config[0].malicious_uri_filter_settings) == 0
+    error_message = "model_armor_full_capabilities defaults to false: the malicious-URI filter arrives only when stated."
+  }
+
+  assert {
+    condition     = length(google_model_armor_template.guardrail.template_metadata[0].multi_language_detection) == 0
+    error_message = "model_armor_full_capabilities defaults to false: multi-language detection arrives only when stated."
   }
 }
 
